@@ -295,7 +295,7 @@ def main(args):
             for k, vs in sorted(sdict.items()):
                 data.append({'data': k, 'vs': vs})
 
-        if args.f != ['raw']:
+        if args.f != 'raw':
             bio = io.BytesIO()
             compress(data, output=bio)
             fdata = []
@@ -313,9 +313,9 @@ def main(args):
                     fdata.append(x)
             data = fdata
             raw = bio.getvalue()
-            if args.f == ['yaml']:
+            if args.f == 'yaml':
                 args.o.write(yaml.dump({ 'raw': raw , 'compressed_length': len(raw), 'parts': data}, indent=4).encode("ascii"))
-            if args.f in (['c'], ['c_avr']) :
+            if args.f in ('c', 'c_avr') :
                 tio = io.StringIO()
                 c = CodeWriter(output=tio)
                 c.p("#ifndef LZJWM_DATA_H")
@@ -327,7 +327,7 @@ def main(args):
                     c.p(f'#define LENGTH_{c.to_dname(name)} {x["length"]}')
                     c.p('')
 
-                c.bytes_to_string('lzjwm_data', raw, " PROGMEM" if args.f == ['c_avr'] else "")
+                c.bytes_to_string('lzjwm_data', raw, " PROGMEM" if args.f == 'c_avr' else "")
                 c.p("")
                 c.p("#endif")
 
@@ -361,11 +361,11 @@ if __name__ == "__main__":
                         help='treat each line in input as its own record')
     parser.add_argument('-s', action='store_true',
                         help='attempt to rearange and unify records for better compression')
-    parser.add_argument('-f', nargs=1, help='output format when compressing',
+    parser.add_argument('-f', help='output format when compressing',
                         choices=('raw', 'c', 'yaml', 'c_avr'), default=['raw'])
     parser.add_argument('file', nargs='*',
                         type=argparse.FileType('rb'), default=[sys.stdin], help='input file')
-    parser.add_argument('-o', nargs=1,
+    parser.add_argument('-o',
                         type=argparse.FileType('wb'), default=sys.stdout.buffer, help='output file')
     args = parser.parse_args()
     if not (args.c or args.d) or (args.c and args.d):
