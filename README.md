@@ -84,3 +84,74 @@ use.
  
 
  
+lzjwm.py encoder
+----------------
+
+The python encoder is fairly advanced, it can output the raw data, or c code
+that may be included in a project. It can also output everything in yaml
+format for you to easily import it into other tools for processing into
+other languages.
+
+As input it can take complete files, a file with a list of lines each of
+which should be individually addressable, or a yaml file describing the
+strings you wish to encode.
+ 
+ 
+    usage: lzjwm.py [-h] [-c] [-d] [-y] [-z] [-0] [--verbose] [-l] [-s]
+                    [-f {raw,c,yaml,c_avr}] [-o O]
+                    [file [file ...]]
+    optional arguments:
+    -h, --help            show this help message and exit
+    -c                    compress
+    -d                    decompress
+    -y                    yaml input
+    -z                    never compress null so it appears unchanged in
+                            compressed data. useful for random access.
+    -0                    append a null terminator to each thing compressed.
+    --verbose, -v
+    -l                    treat each line in input as its own record
+    -s                    attempt to rearange and unify records for better
+                            compression
+    -f {raw,c,yaml,c_avr}
+                            output format when compressing
+    -o O                  output file
+ 
+for example if you were to process the following yaml file with 
+
+    ./lzjwm.py -y example.yaml -f c
+ 
+        # example yaml input for lzjwm.py
+        - name: bar
+        data: 'foobar'
+        - name: baz
+        data: 'foobaz'
+        - name: intro
+        data: 'Hello World!'
+        - name: outro
+        data: 'Goodbye World!'
+        
+you would get the following, with the offset and lengths what you want to
+pass to your decompression routine to get each string back. notice that it
+is able to compress foobar and foobaz together even though they are separate
+strings.
+
+        #ifndef LZJWM_DATA_H
+        #define LZJWM_DATA_H
+
+        #define OFFSET_BAR 0
+        #define LENGTH_BAR 6
+
+        #define OFFSET_BAZ 6
+        #define LENGTH_BAZ 6
+
+        #define OFFSET_INTRO 9
+        #define LENGTH_INTRO 12
+
+        #define OFFSET_OUTRO 21
+        #define LENGTH_OUTRO 14
+
+        static const char lzjwm_data[] = 
+                "foobarf\226zHello World!G\320dbye\263\240";
+
+        #endif
+

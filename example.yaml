@@ -1,0 +1,9 @@
+# example yaml input for lzjwm.py
+- name: bar
+  data: 'foobar'
+- name: baz
+  data: 'foobaz'
+- name: intro
+  data: 'Hello World!'
+- name: outro
+  data: 'Goodbye World!'
