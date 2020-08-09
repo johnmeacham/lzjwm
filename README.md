@@ -133,23 +133,23 @@ nodes and chopping pieces out of the linked list as we go then traverse the
 final list for our compressed stream. 
 
 example encoding 12123
-   _________   _________   _________   _________   _________
-   | ababc |   |  babc |   |   abc |   |    bc |   |     c |    
-   | a     |   | b     |   | a     |   | b     |   | c     |    
-   |       |-->|       |-->|       |-->|       |-->|       |-->NULL
-   
-   ^ current position
+        _________   _________   _________   _________   _________
+        | ababc |   |  babc |   |   abc |   |    bc |   |     c |    
+        | a     |   | b     |   | a     |   | b     |   | c     |    
+        |       |-->|       |-->|       |-->|       |-->|       |-->NULL
+        
+        ^ current position
    
 we then look at our current position and compare the string to each link in
 order ahead of it up to a limit of 32 links looking for a match of greater than
 2 characters.
 
  
-   _________   _________   _________   _________   _________
-   | ababc |   |  babc |   |   abc |   |    bc |   |     c |    
-   | a     |   | b     |   | a     |   | b     |   | c     |    
-   |       |-->|       |-->|       |-->|       |-->|       |-->NULL
-   ^________________________^ length 2 match
+        _________   _________   _________   _________   _________
+        | ababc |   |  babc |   |   abc |   |    bc |   |     c |    
+        | a     |   | b     |   | a     |   | b     |   | c     |    
+        |       |-->|       |-->|       |-->|       |-->|       |-->NULL
+        ^________________________^ length 2 match
    
 we have a match, so we go to the matching entry and replace it with an
 indirection and short circuit the future links that were pulled into it.
