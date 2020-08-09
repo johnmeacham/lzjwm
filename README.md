@@ -82,9 +82,79 @@ use.
  -  the calgary corpus is reduced by about 30%
 
  
+decompression algorithm
+-----------------------
+
+The streaming algorithm is very straightforward, it keeps track of the
+current location in the buffer and how many characters it wants to decode
+from that position. it passes ascii characters through and when it
+encounters a match it adjusts its location and needed count appropriately
+and keeps looping. in case the length needed is larger than the current
+location it calls itself recursively. since the only thing we are adjusting
+is pointers into the compressed string, we don't need to keep track of any
+decoded data.
+
+When it comes to recursion since it only calls itself recursively when
+length needed is strictly larger than length available and it will never
+need a length higher than 5 in a recursive call, the recursive call depth
+will never be over 4 thus giving us constant space decoding.
+
+When it comes to speed things are a bit trickier, it is possible for a
+pathological stream to give us quadratic decoding time since it will have to
+re-decode already decoded data. However there are a couple solutions to
+that. you can use a small read buffer (160 bytes is always sufficient) to
+avoid all duplicate decoding, included is an implementation of the decoder
+that works that way. Alternatively the encoder can limit the quadratic
+behavior by putting a maximum depth on nesting of indirections. 
+
+However, in practice, the best solution is to just ignore it, in the common
+case of small strings for an embedded system you don't even have enough
+space available to run into the quadratic behavior and if you do, you have
+enough space for the buffered decoder.
+ 
+Greedy Compression Algorithm
+----------------------------
+
+A straightforward linear greedy algorithm gives very good compression
+results.
+
+It is is forward looking algorithm, rather than going through the stream and
+looking backwards for matches, it examines each location and looks forward
+to see if there is anywhere that is useful. This is important because the
+offsets can "jump over" encoded data, so by making sure the stream is
+compressed as much as possible before you get to a position it has a further
+lookahead.
+
+First the input string is converted into a linked list, each node of which
+has the tail of the string at that location as well as a spot for a count
+and offset, they are initially blank as each node represents the character
+itself. we go through the list replacing character nodes with indirection
+nodes and chopping pieces out of the linked list as we go then traverse the
+final list for our compressed stream. 
+
+example encoding 12123
+   _________   _________   _________   _________   _________
+   | ababc |   |  babc |   |   abc |   |    bc |   |     c |    
+   | a     |   | b     |   | a     |   | b     |   | c     |    
+   |       |-->|       |-->|       |-->|       |-->|       |-->NULL
+   
+   ^ current position
+   
+we then look at our current position and compare the string to each link in
+order ahead of it up to a limit of 32 links looking for a match of greater than
+2 characters.
 
  
-lzjwm.py encoder
+   _________   _________   _________   _________   _________
+   | ababc |   |  babc |   |   abc |   |    bc |   |     c |    
+   | a     |   | b     |   | a     |   | b     |   | c     |    
+   |       |-->|       |-->|       |-->|       |-->|       |-->NULL
+   ^________________________^ length 2 match
+   
+we have a match, so we go to the matching entry and replace it with an
+indirection and short circuit the future links that were pulled into it.
+ 
+lzjwm.py utility 
 ----------------
 
 The python encoder is fairly advanced, it can output the raw data, or c code
@@ -118,7 +188,7 @@ strings you wish to encode.
  
 for example if you were to process the following yaml file with 
 
-    ./lzjwm.py -y example.yaml -f c
+    ./lzjwm.py -y example.yaml -f c -c
  
         # example yaml input for lzjwm.py
         - name: bar
