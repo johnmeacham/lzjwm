@@ -133,6 +133,7 @@ nodes and chopping pieces out of the linked list as we go then traverse the
 final list for our compressed stream. 
 
 example encoding 12123
+
         _________   _________   _________   _________   _________
         | ababc |   |  babc |   |   abc |   |    bc |   |     c |    
         | a     |   | b     |   | a     |   | b     |   | c     |    
@@ -144,7 +145,6 @@ we then look at our current position and compare the string to each link in
 order ahead of it up to a limit of 32 links looking for a match of greater than
 2 characters.
 
- 
         _________   _________   _________   _________   _________
         | ababc |   |  babc |   |   abc |   |    bc |   |     c |    
         | a     |   | b     |   | a     |   | b     |   | c     |    
@@ -153,6 +153,21 @@ order ahead of it up to a limit of 32 links looking for a match of greater than
    
 we have a match, so we go to the matching entry and replace it with an
 indirection and short circuit the future links that were pulled into it.
+
+        _________   _________   _________   _________   _________
+        | ababc |   |  babc |   |   abc |   |    bc |   |     c |    
+        | a     |   | b     |   |(-2,2) |   | b     |   | c     |    
+        |       |-->|       |-->|       |   |       |-->|       |-->NULL
+                                        |               ^
+                                        |----------------
+ 
+ the abc node is replaced with an indirection and the bc node is removed from
+ the list and th efinal compressed stream and additionally, as the comparison
+ pointer moves forward to the next node, it will _also_ skip over the removed
+ node allowing it to look ahead further than it otherwise would. since every
+ node can leapfrog replacing nodes in their future and chopping out sections of
+ the list, they work together to come up with a good compressed stream.
+ 
  
 lzjwm.py utility 
 ----------------
