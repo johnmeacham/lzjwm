@@ -51,7 +51,6 @@ int main(int argc, char *argv[])
                 sz += fread(data + sz, 1, bsz - sz - 1, stdin);
         }
         data[sz] = '\0';
-        printf("read %u bytes\n", (unsigned)sz);
         lzjwm_decompress(data, 0, -1);
         return 0;
 }

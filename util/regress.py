@@ -74,10 +74,14 @@ for fn in sorted(glob.glob(base + '/*')):
                   stdin=baseout + '.lzjwm_python', stdout=baseout + '.decompressed_c')
     status = call(
         ['diff', baseout + '.decompressed_c', fn], result, status)
+    status = call(['./tiny_lzjwm'], result, status,
+                  stdin=baseout + '.lzjwm_python', stdout=baseout + '.decompressed_tiny')
+    status = call(
+        ['diff', baseout + '.decompressed_tiny', fn], result, status)
 
 
 tab = tabulate(results, ['name', 'compress', 'decompress',
-                         'decompress_stream', 'diff', 'diff_stream', 'decom_python', 'diff_python','comp_python','decom_c','diff_p2c'])
+                         'decom_stream', 'diff', 'diff_stream', 'decom_python', 'diff_python','comp_python','decom_c','diff_p2c','tiny', 'diff_tiny'])
 log.write(tab)
 log.flush()
 print(tab)
