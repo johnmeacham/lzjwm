@@ -321,6 +321,9 @@ def main(args):
                 c.p("#ifndef LZJWM_DATA_H")
                 c.p("#define LZJWM_DATA_H")
                 c.p("")
+                if args.f == 'c_avr':
+                    c.p("#include <avr/pgmspace.h>")
+                    c.p("")
                 for x in data:
                     name = x['name']
                     c.p(f'#define OFFSET_{c.to_dname(name)} {x["compressed_offset"]}')
@@ -335,9 +338,6 @@ def main(args):
 
         else:
             compress(data, output=args.o)
-
-#            print(x)
-#        print(data)
 
 
 if __name__ == "__main__":
@@ -362,7 +362,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', action='store_true',
                         help='attempt to rearange and unify records for better compression')
     parser.add_argument('-f', help='output format when compressing',
-                        choices=('raw', 'c', 'yaml', 'c_avr'), default=['raw'])
+                        choices=('raw', 'c', 'yaml', 'c_avr'), default='raw')
     parser.add_argument('file', nargs='*',
                         type=argparse.FileType('rb'), default=[sys.stdin], help='input file')
     parser.add_argument('-o',
